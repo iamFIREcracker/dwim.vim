@@ -1,0 +1,51 @@
+*dwim.txt*  DWIM-open files from filename:line:col strings
+
+INTRODUCTION                                    *dwim*
+
+A tiny Vim plugin that opens files from a filename:line:col string and
+jumps to the requested location. Useful for pasting paths produced by
+compilers, linters, terminal output, or git diffs.
+
+COMMANDS                                        *dwim-commands*
+
+                                                *:DWIM*
+:DWIM [{target}]        Open {target} and jump to the location encoded
+                        in it. {target} may be:
+
+                          filename
+                          filename:line
+                          filename:line:col
+
+                        When called with no argument, {target} is read
+                        from the OS clipboard (the |quote+| register).
+>
+                          :DWIM src/foo.ts:42:7
+                          :DWIM b/src/foo.ts:42
+                          :DWIM
+<
+
+NORMALIZATION                                   *dwim-normalization*
+
+Before parsing, the input is cleaned up:
+
+  - Newlines, carriage returns, NUL bytes, and literal ^@ sequences
+    introduced by terminal copy/paste are stripped.
+  - Leading and trailing whitespace is trimmed.
+  - Git diff prefixes "a/" and "b/" are removed when the resulting
+    path actually exists on disk.
+  - TypeScript / MSBuild locations of the form file(line,col) are
+    rewritten to file:line:col. Any trailing diagnostic text after
+    the location is dropped, so this works:
+>
+      :DWIM foo.ts(280,13): error TS2339: Property 'x' does not exist
+<
+    and opens foo.ts at line 280, column 13.
+
+MAPPINGS                                        *dwim-mappings*
+
+No mappings are created by default. A convenient one:
+>
+  nnoremap <leader>o :DWIM<CR>
+<
+
+ vim:tw=72:ft=help:norl:
