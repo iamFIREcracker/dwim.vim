@@ -60,8 +60,13 @@ Before parsing, the input is cleaned up:
   - Newlines, carriage returns, NUL bytes, and literal ^@ sequences
     introduced by terminal copy/paste are stripped.
   - Leading and trailing whitespace is trimmed.
-  - Git diff prefixes "a/" and "b/" are removed when the resulting
-    path actually exists on disk.
+  - Leading path components are peeled off: the path is tried as-is,
+    then with leading components stripped one at a time, and the first
+    variant that exists on disk is opened. For "/app/src/foo/bar.ts"
+    this tries, in order, "/app/src/foo/bar.ts", "app/src/foo/bar.ts",
+    "src/foo/bar.ts", "foo/bar.ts", "bar.ts". When nothing matches the
+    original path is kept, so opening a brand-new file still works.
+    This also removes git diff prefixes "a/" and "b/".
   - TypeScript / MSBuild locations of the form file(line,col) are
     rewritten to file:line:col. Any trailing diagnostic text after
     the location is dropped, so this works:

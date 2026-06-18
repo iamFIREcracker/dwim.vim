@@ -15,8 +15,12 @@ OS clipboard.
   from the `+` register.
 - **Cleans up terminal copy/paste noise** — newlines, `\0` bytes, and
   literal `^@` sequences are stripped.
-- **Git diff prefixes** — `a/path/to/file` and `b/path/to/file` are
-  unwrapped when the underlying file exists.
+- **Leading path components are peeled off** — an absolute or
+  over-qualified path is tried as-is, then with leading components
+  stripped one at a time, opening the first variant that exists. So
+  `/app/src/foo/bar.ts` falls back to `app/src/foo/bar.ts`,
+  `src/foo/bar.ts`, and so on. This also unwraps git diff prefixes
+  like `a/path/to/file` and `b/path/to/file`.
 - **TypeScript / MSBuild locations** — `foo.ts(280,13): error TS2339`
   is normalized to `foo.ts:280:13` and trailing diagnostic text is
   dropped.

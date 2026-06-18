@@ -42,18 +42,6 @@ function! s:OpenAtLocation(arg, count, mods, bang) abort
   " 2. Trim leading/trailing whitespace
   let l:arg = substitute(l:arg, '^\s*\|\s*$', '', 'g')
 
-  " 3. Strip git diff a/ or b/ prefixes if the resulting path exists
-  "    Git outputs paths like 'a/path/to/file' and 'b/path/to/file' in diffs;
-  "    strip the prefix only if the resulting path actually exists.
-  if l:arg =~# '^[ab]/'
-    let l:stripped_arg = substitute(l:arg, '^[ab]/', '', '')
-    " Extract just the file part for existence check (remove :line:col suffix)
-    let l:stripped_file = substitute(l:stripped_arg, ':\d\+\(:\d\+\)\?$', '', '')
-    if filereadable(l:stripped_file)
-      let l:arg = l:stripped_arg
-    endif
-  endif
-
   " 3. Normalize TypeScript/MSBuild-style locations: file(line,col)
   "    e.g. 'foo.ts(280,13): error TS2339: ...' -> 'foo.ts:280:13'
   "    Drop any trailing text after the location too.
@@ -84,10 +72,33 @@ function! s:OpenAtLocation(arg, count, mods, bang) abort
     let l:file = l:arg
   endif
 
-  " 5. Open the file
+  " 5. Resolve the file by progressively stripping leading path
+  "    components, opening the first variant that exists on disk. For
+  "    '/app/src/foo/bar.ts' this tries, in order:
+  "      /app/src/foo/bar.ts -> app/src/foo/bar.ts -> src/foo/bar.ts
+  "      -> foo/bar.ts -> bar.ts
+  "    This turns an absolute or over-qualified path into one Vim can
+  "    open, and subsumes git's a/ and b/ diff prefixes (a/src/foo.ts
+  "    resolves to src/foo.ts). The original path is kept when nothing
+  "    matches, so opening a brand-new file still works.
+  let l:candidate = l:file
+  while !empty(l:candidate)
+    if filereadable(l:candidate)
+      let l:file = l:candidate
+      break
+    endif
+    " Stop once there's no leading component left to strip.
+    if l:candidate !~# '/'
+      break
+    endif
+    " Drop everything up to and including the first slash.
+    let l:candidate = substitute(l:candidate, '^[^/]*/\+', '', '')
+  endwhile
+
+  " 6. Open the file
   execute l:open . a:bang fnameescape(l:file)
 
-  " 6. Jump to the requested location
+  " 7. Jump to the requested location
   if l:line > 0
     execute l:line
     if l:col > 0
