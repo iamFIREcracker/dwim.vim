@@ -27,6 +27,29 @@ OS clipboard.
 |-------------------|----------------------------------------------------------|
 | `:DWIM [target]`  | Open `target`. Defaults to the OS clipboard (`+` reg).   |
 
+### Window placement
+
+Pick where the file lands using the usual command modifiers, plus an
+optional `++curwin` override:
+
+| Invocation                  | Where the file opens                      |
+|-----------------------------|-------------------------------------------|
+| `:DWIM {target}`            | current window (default)                  |
+| `:0DWIM {target}`           | current window (shorthand for `++curwin`) |
+| `:DWIM ++curwin {target}`   | current window, ignoring any modifiers    |
+| `:vert DWIM {target}`       | vertical split                            |
+| `:aboveleft DWIM {target}`  | horizontal split above                    |
+| `:belowright DWIM {target}` | horizontal split below                    |
+| `:tab DWIM {target}`        | a new tab                                 |
+
+Internally `:DWIM` switches from `:edit` to `:split` whenever a
+window/tab modifier (`:vertical`, `:aboveleft`, `:leftabove`,
+`:belowright`, `:rightbelow`, `:topleft`, `:botright`, `:tab`) is
+present, so no explicit `++split` flag is needed.
+
+A trailing `!` is passed through to the underlying `:edit` / `:split`
+so unsaved changes in the current buffer can be discarded.
+
 ## Examples
 
 ```vim
@@ -34,6 +57,10 @@ OS clipboard.
 :DWIM b/src/foo.ts:42
 :DWIM src/foo.ts(280,13): error TS2339: ...
 :DWIM                            " read from clipboard
+
+:tab DWIM src/foo.ts:42          " open in a new tab
+:vert DWIM src/foo.ts:42         " open in a vertical split
+:aboveleft DWIM src/foo.ts:42    " open in a horizontal split above
 ```
 
 ## Suggested mapping

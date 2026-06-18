@@ -1,8 +1,35 @@
 " DWIM open: filename[:line[:col]] {{{
 
-function! s:OpenAtLocation(arg) abort
+function! s:OpenAtLocation(arg, count, mods, bang) abort
+  " Parse leading ++curwin directive
+  let l:arg = a:arg
+  let l:curwin = 0
+  if l:arg =~# '^\s*++curwin\>'
+    let l:arg = substitute(l:arg, '^\s*++curwin\s*', '', '')
+    let l:curwin = 1
+  endif
+
+  " :0DWIM is shorthand for ++curwin -- force the current window and
+  " ignore any window-modifying :command-modifiers.
+  if a:count == 0
+    let l:curwin = 1
+  endif
+
+  " Pick :edit vs :split. :vertical, :tab, :aboveleft, etc. are silently
+  " dropped on :edit (which doesn't open a window), so switch to :split
+  " whenever a window/tab modifier is present -- that's what makes
+  " :vert DWIM and :tab DWIM Just Work without an explicit ++split flag.
+  let l:window_mod = a:mods =~# '\v<%(vertical|tab|aboveleft|leftabove|belowright|rightbelow|botright|topleft)>'
+  if l:curwin
+    let l:open = 'edit'
+  elseif l:window_mod
+    let l:open = trim(a:mods . ' split')
+  else
+    let l:open = trim(a:mods . ' edit')
+  endif
+
   " Fall back to the OS clipboard when no argument is given
-  let l:arg = empty(a:arg) ? getreg('+') : a:arg
+  let l:arg = empty(l:arg) ? getreg('+') : l:arg
 
   " 1. Clean up crap introduced by terminal copy/paste
   "    - remove newlines / CR
@@ -58,7 +85,7 @@ function! s:OpenAtLocation(arg) abort
   endif
 
   " 5. Open the file
-  execute 'edit' fnameescape(l:file)
+  execute l:open . a:bang fnameescape(l:file)
 
   " 6. Jump to the requested location
   if l:line > 0
@@ -71,5 +98,14 @@ endfunction
 
 " :DWIM /path/to/file.js:123:45
 " With no argument, reads the location from the OS clipboard.
-command! -nargs=? DWIM call <SID>OpenAtLocation(<q-args>)
+"
+" Window placement:
+"   :DWIM {target}            " edit in the current window (default)
+"   :0DWIM {target}           " force current window (same as ++curwin)
+"   :DWIM ++curwin {target}   " force current window (ignore any :mods)
+"   :vert DWIM {target}       " open in a vertical split
+"   :aboveleft DWIM {target}  " open in a horizontal split above
+"   :tab DWIM {target}        " open in a new tab
+command! -nargs=? -bang -bar -count=1 DWIM
+      \ call <SID>OpenAtLocation(<q-args>, <count>, '<mods>', '<bang>')
 " }}}

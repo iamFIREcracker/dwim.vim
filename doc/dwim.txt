@@ -9,7 +9,8 @@ compilers, linters, terminal output, or git diffs.
 COMMANDS                                        *dwim-commands*
 
                                                 *:DWIM*
-:DWIM [{target}]        Open {target} and jump to the location encoded
+:[count]DWIM [++curwin] [{target}]
+                        Open {target} and jump to the location encoded
                         in it. {target} may be:
 
                           filename
@@ -23,6 +24,34 @@ COMMANDS                                        *dwim-commands*
                           :DWIM b/src/foo.ts:42
                           :DWIM
 <
+                        Window placement is controlled by the usual
+                        |:command-modifiers|:
+
+                          :DWIM {target}            edit in the current
+                                                    window (default)
+                          :0DWIM {target}           force current window
+                                                    (shorthand for
+                                                    ++curwin)
+                          :DWIM ++curwin {target}   force the current
+                                                    window, ignoring any
+                                                    modifiers
+                          :vert DWIM {target}       vertical split
+                          :aboveleft DWIM {target}  horizontal split
+                                                    above
+                          :belowright DWIM {target} horizontal split
+                                                    below
+                          :tab DWIM {target}        open in a new tab
+
+                        Internally, :DWIM switches from |:edit| to
+                        |:split| whenever a window/tab modifier is
+                        present, so |:vertical|, |:aboveleft|,
+                        |:leftabove|, |:belowright|, |:rightbelow|,
+                        |:topleft|, |:botright|, and |:tab| all Just
+                        Work.
+
+                        A trailing |!| is passed through to the
+                        underlying |:edit| / |:split| so unsaved changes
+                        in the current buffer can be discarded.
 
 NORMALIZATION                                   *dwim-normalization*
 
