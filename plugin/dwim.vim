@@ -50,6 +50,13 @@ function! s:OpenAtLocation(arg, count, mods, bang) abort
     let l:arg = l:m[1] . ':' . l:m[2] . ':' . l:m[3]
   endif
 
+  " 3. Normalize bracketed locations: file:[line,col]
+  "    e.g. '.../TokenValidationException.java:[1,11]' -> '...:1:11'
+  if l:arg =~ ':\[\d\+,\d\+\]$'
+    let l:m = matchlist(l:arg, '\v^(.*):\[(\d+),(\d+)\]$')
+    let l:arg = l:m[1] . ':' . l:m[2] . ':' . l:m[3]
+  endif
+
   let l:line = 0
   let l:col  = 0
 

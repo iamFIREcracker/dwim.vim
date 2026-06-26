@@ -24,6 +24,8 @@ OS clipboard.
 - **TypeScript / MSBuild locations** — `foo.ts(280,13): error TS2339`
   is normalized to `foo.ts:280:13` and trailing diagnostic text is
   dropped.
+- **Bracketed locations** — `Foo.java:[1,11]` is normalized to
+  `Foo.java:1:11`.
 
 ## Commands
 
@@ -60,6 +62,7 @@ so unsaved changes in the current buffer can be discarded.
 :DWIM src/foo.ts:42:7
 :DWIM b/src/foo.ts:42
 :DWIM src/foo.ts(280,13): error TS2339: ...
+:DWIM src/Foo.java:[1,11]
 :DWIM                            " read from clipboard
 
 :tab DWIM src/foo.ts:42          " open in a new tab

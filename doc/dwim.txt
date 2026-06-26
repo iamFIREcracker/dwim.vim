@@ -75,6 +75,13 @@ Before parsing, the input is cleaned up:
 <
     and opens foo.ts at line 280, column 13.
 
+  - Bracketed locations of the form file:[line,col] are rewritten to
+    file:line:col, so this works:
+>
+      :DWIM src/Foo.java:[1,11]
+<
+    and opens Foo.java at line 1, column 11.
+
 MAPPINGS                                        *dwim-mappings*
 
 No mappings are created by default. A convenient one:
