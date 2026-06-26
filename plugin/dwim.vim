@@ -52,8 +52,12 @@ function! s:OpenAtLocation(arg, count, mods, bang) abort
 
   " 3. Normalize bracketed locations: file:[line,col]
   "    e.g. '.../TokenValidationException.java:[1,11]' -> '...:1:11'
-  if l:arg =~ ':\[\d\+,\d\+\]$'
-    let l:m = matchlist(l:arg, '\v^(.*):\[(\d+),(\d+)\]$')
+  "    A leading diagnostic tag (e.g. '[ERROR] ') and any trailing text
+  "    after the location (e.g. " error: ';' expected") are dropped, so
+  "      [ERROR] .../Foo.java:[1,11] error: ';' expected
+  "    is handled too.
+  if l:arg =~ ':\[\d\+,\d\+\]'
+    let l:m = matchlist(l:arg, '\v^%(\s*\[[[:upper:]]+\]\s*)?(.{-}):\[(\d+),(\d+)\]')
     let l:arg = l:m[1] . ':' . l:m[2] . ':' . l:m[3]
   endif
 

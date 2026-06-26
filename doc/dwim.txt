@@ -76,11 +76,14 @@ Before parsing, the input is cleaned up:
     and opens foo.ts at line 280, column 13.
 
   - Bracketed locations of the form file:[line,col] are rewritten to
-    file:line:col, so this works:
+    file:line:col. A leading diagnostic tag such as "[ERROR] " and any
+    trailing message after the location are dropped, so both of these
+    work:
 >
       :DWIM src/Foo.java:[1,11]
+      :DWIM [ERROR] src/Foo.java:[1,11] error: ';' expected
 <
-    and opens Foo.java at line 1, column 11.
+    and open Foo.java at line 1, column 11.
 
 MAPPINGS                                        *dwim-mappings*
 

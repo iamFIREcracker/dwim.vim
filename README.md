@@ -25,7 +25,8 @@ OS clipboard.
   is normalized to `foo.ts:280:13` and trailing diagnostic text is
   dropped.
 - **Bracketed locations** — `Foo.java:[1,11]` is normalized to
-  `Foo.java:1:11`.
+  `Foo.java:1:11`. A leading diagnostic tag like `[ERROR]` and any
+  trailing message (`error: ';' expected`) are dropped.
 
 ## Commands
 
